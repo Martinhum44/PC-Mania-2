@@ -427,7 +427,6 @@ contract nftTime is IERC721, IERC165 {
         bytes32 hash = keccak256(abi.encodePacked(block.timestamp, msg.sender, block.number ));
         uint fin = uint(hash) % (finish - start);
         fin += start;
-        console.log(fin);
         return fin;
     }
 

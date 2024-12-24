@@ -921,7 +921,7 @@ const App:React.FC = () => {
   const [contract, setContract] = useState<any | null>(null)
   const [account, setAccount] = useState<null | string>(null)
   const [listings, setListings] = useState<Listing[]>([])
-  const [state, setState] = useState<"shop" | "buying">("shop")
+  const [state, setState] = useState<"shop" | "buying" | "my">("shop")
   const [currentListing, setCurrentListing] = useState<Listing>()
 
   function photoReturn(l: Listing | undefined): NFTPhoto {
@@ -957,7 +957,7 @@ const App:React.FC = () => {
   return (
 	<>
     <div style={{display: state == "shop" ? "block" : "none"}}>
-		<h1 style={h1Styles}>PC Mania</h1>
+		<h1 style={h1Styles}>PC Mania Market</h1>
       <ConnectWallet contractAddress="0xBFA57539d8B70b20CCe7F32B08a45815C04AA04D" contractABI={ABI} callback={async(a ,c)=>{
         setAccount(a); 
         setContract(c);
@@ -987,6 +987,7 @@ const App:React.FC = () => {
 			</div> : ""
 		})}
       </div> : <h1 style={h1Styles}>You must sign in with your web3 wallet to see the available listings.</h1>}
+	  <button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px"}} onClick={() => setState("my")}>My NFTs</button>
     </div>
 
 	<div style={{display: state == "buying" ? "block" : "none", padding: "0", alignItems: "center"}}>
@@ -999,10 +1000,11 @@ const App:React.FC = () => {
 					<h1 style={h1Styles}>{generatePCName(currentListing?.nftBase)}</h1>
 					<h3 style={h1Styles}>Lister: {currentListing?.lister}</h3>
 					<h3 style={{...h1Styles, display: currentListing?.nftBase.NS == 0 ? "none" : "block"}}>Condition: {Number(currentListing?.nftBase.condition)} / {currentListing?.nftBase.NS == 3 ? 150 : (currentListing?.nftBase.NS == 2 ? 125 : 100)}</h3>
-					<Web3Button contract={contract} value={currentListing?.price} callback={/* */} function={/* */} address={String(account)}/>
+					<Web3Button contract={contract} value={currentListing?.price} callback={() => {alert(`NFT ${Number(currentListing?.nftBase.id)} sucessfully bought!`); window.location.reload()}} function="buyNFT" params={[currentListing?.listId]} address={String(account)} text="Buy NFT"/>
 				</div>
 			</div>
 		</div>
+		<button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px"}} onClick={() => setState("shop")}>Back</button>
 	</div>
 	</>
   )

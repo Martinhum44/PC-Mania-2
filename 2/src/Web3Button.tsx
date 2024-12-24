@@ -6,17 +6,18 @@ type Props = {
     contract: any,
     function: string,
     address: string,
-    color: string,
-    backgroundColor: string,
+    color?: string,
+    backgroundColor?: string,
     text: string,
     params: any[],
     value?: number,
-    callback: Function
+    callback?: Function
 }
 
 const Web3Button:React.FC<Props> = (props: Props) => {
+    let p = props.value
     if (props.value == undefined){
-        props.value = 0
+        p = 0
     }
     const [buttonStyle, setButtonStyle] = useState({
         width: "150px",
@@ -54,9 +55,9 @@ const Web3Button:React.FC<Props> = (props: Props) => {
     async function call(){
         const func = props.contract.methods[props.function]
         if(props.params){
-            await func(...props.params).send({from: props.address, value: props.value || 0})  
+            await func(...props.params).send({from: props.address, value: p || 0})  
         } else {
-            await func().send({from: props.address, value: props.value || 0})
+            await func().send({from: props.address, value: p || 0})
         }
         if(props.callback){
             await props.callback()

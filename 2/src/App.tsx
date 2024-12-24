@@ -921,18 +921,19 @@ const App:React.FC = () => {
   const [contract, setContract] = useState<any | null>(null)
   const [account, setAccount] = useState<null | string>(null)
   const [listings, setListings] = useState<Listing[]>([])
+  const [NFTs, setNFTs] = useState<NFT[]>([])
   const [state, setState] = useState<"shop" | "buying" | "my">("shop")
   const [currentListing, setCurrentListing] = useState<Listing>()
 
-  function photoReturn(l: Listing | undefined): NFTPhoto {
-	if(l == undefined){
+  function photoReturn(n: NFT | undefined): NFTPhoto {
+	if(n == undefined){
 		return "box.png"
 	}
-	if(l.nftBase.NS == 3){
+	if(n.NS == 3){
 		return "gold.png"
-	} else if (l.nftBase.NS == 2){
+	} else if (n.NS == 2){
 		return "cool.png"
-	} else if (l.nftBase.NS == 1){
+	} else if (n.NS == 1){
 		return "potato.png"
 	} else {
 		return "box.png"
@@ -950,7 +951,7 @@ const App:React.FC = () => {
 	} else if (n.NS == 3){
 		return "Gold PC"
 	} else {
-		return "Potato PC"
+		return "PC Box"
 	}
   }
 
@@ -964,16 +965,28 @@ const App:React.FC = () => {
 		const count = (await getValue("countReturn", c))
 		console.log(count)
 		const newListings: Listing[] = []
+		const newNFTs: NFT[] = []
 		for(let i = 0; i < count[1]; i++){
 			let ls = await getValue("listee", c, [i])
 			newListings.push(ls)
 		}
-		console.log(newListings)
+
+		for(let i = 0; i < count[0]; i++){
+			const owner: string = await getValue("ownerOf", c, [i])
+			console.log(owner, a, owner == a)
+			if(owner.toLowerCase() == a.toLowerCase()){
+				newNFTs.push(await getValue("viewNFT", c, [i]))
+			}
+		}
+
+		console.log(newNFTs)
 		setListings(newListings)
+		setNFTs(newNFTs)
       }} handleChange={(a:string) => setAccount(a)}/>
+	  <center>
       {contract != null ? <div id="lists" style={{width: "80%", height: "500px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>
 	  	{listings.map(l => {
-			let URI: NFTPhoto = photoReturn(l)
+			let URI: NFTPhoto = photoReturn(l.nftBase)
 			return !l.bought ? <div style={{borderRadius: "10px", height:"200px", width:"150px", backgroundColor: "#909190"}} onMouseOver={(event) => event.currentTarget.style.backgroundColor = "#B6B6B6"}
 			onMouseOut={(event) => event.currentTarget.style.backgroundColor = "#909190"}
 			onClick={() => {
@@ -982,29 +995,46 @@ const App:React.FC = () => {
 			}}
 			>
 				<img src={URI} style={{backgroundColor: "white", marginTop: "5px", borderRadius: "100%"}}/>
-				<h5 style={h1Styles}>Cost: {Number(l.price)/1000000000/1000000000} ETH</h5>
+				<h5 style={h1Styles}>Price: {Number(l.price)/1000000000/1000000000} ETH</h5>
 				<h6 style={h1Styles}>NFT id: {Number(l.nftId)}</h6>
 			</div> : ""
 		})}
       </div> : <h1 style={h1Styles}>You must sign in with your web3 wallet to see the available listings.</h1>}
-	  <button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px"}} onClick={() => setState("my")}>My NFTs</button>
+	  <button style={{display: contract == null ? "none" : "block",width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px", marginTop: "10px"}} onClick={() => setState("my")}>My NFTs</button>
+	  </center>
     </div>
 
 	<div style={{display: state == "buying" ? "block" : "none", padding: "0", alignItems: "center"}}>
 		<div style={{display: "grid", gridTemplateColumns: "4fr 6fr"}}>
 			<div>
-				<img src={photoReturn(currentListing)} style={{ marginTop: "5px", borderRadius: "20px", height: "600px", width: "90%", backgroundColor: "lightgray"}}/>
+				<img src={photoReturn(currentListing?.nftBase)} style={{ marginTop: "5px", borderRadius: "20px", height: "600px", width: "90%", backgroundColor: "lightgray"}}/>
 			</div>
 			<div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-				<div style={{backgroundColor: "#EEEEEE",height: "300px",width: "80%",borderRadius: "20px"}}>
+				<div style={{backgroundColor: "#EEEEEE",height: "330px",width: "80%",borderRadius: "20px"}}>
 					<h1 style={h1Styles}>{generatePCName(currentListing?.nftBase)}</h1>
 					<h3 style={h1Styles}>Lister: {currentListing?.lister}</h3>
-					<h3 style={{...h1Styles, display: currentListing?.nftBase.NS == 0 ? "none" : "block"}}>Condition: {Number(currentListing?.nftBase.condition)} / {currentListing?.nftBase.NS == 3 ? 150 : (currentListing?.nftBase.NS == 2 ? 125 : 100)}</h3>
+					<h3 style={h1Styles}>NFT id: {Number(currentListing?.nftBase.id)}</h3>
+					<h3 style={{...h1Styles, display: currentListing?.nftBase.NS == 0 ? "none" : "block"}}>Condition: {Number(currentListing?.nftBase.condition)}/{currentListing?.nftBase.NS == 3 ? 150 : (currentListing?.nftBase.NS == 2 ? 125 : 100)}</h3>
+					<h3 style={h1Styles}>Price: {Number(currentListing?.price)/1000000000/1000000000} ETH</h3>
 					<Web3Button contract={contract} value={currentListing?.price} callback={() => {alert(`NFT ${Number(currentListing?.nftBase.id)} sucessfully bought!`); window.location.reload()}} function="buyNFT" params={[currentListing?.listId]} address={String(account)} text="Buy NFT"/>
 				</div>
 			</div>
 		</div>
 		<button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px"}} onClick={() => setState("shop")}>Back</button>
+	</div>
+
+	<div style={{display: state == "my" ? "block" : "none"}}>
+		<h1 style={h1Styles}>{account}'s PC Mania Collection</h1>
+		<center>
+		<div id="NFTs" style={{width: "80%", height: "500px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>{NFTs.map(n => {
+			let URI: NFTPhoto = photoReturn(n)
+			return <div style={{borderRadius: "10px", height:"300px", width:"225px", backgroundColor: "#909190"}} onMouseOver={(event) => event.currentTarget.style.backgroundColor = "#B6B6B6"}
+			onMouseOut={(event) => event.currentTarget.style.backgroundColor = "#909190"}>
+				<img src={URI} style={{backgroundColor: "white", marginTop: "5px", borderRadius: "100%"}}/>
+				<h3 style={h1Styles}>NFT ID: {Number(n.id)}</h3>
+				<h3 style={{...h1Styles, display: n.NS == 0 ? "none" : "block"}}>Condition: {Number(n.condition)}/{n.NS == 3 ? 150 : (n.NS == 2 ? 125 : 100)}</h3>
+			</div> 
+		})}</div></center>
 	</div>
 	</>
   )

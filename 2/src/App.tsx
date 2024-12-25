@@ -916,14 +916,28 @@ type Listing = {
 }
 
 const h1Styles = {fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif"}
+const inputStyles = {
+    width: "200px",
+    border: "none",
+    fontFamily: "Inter, system-ui, Arial, Helvetica, sans-serif",
+    height: "50px",
+    margin: "0",
+    borderRadius: "10px",
+    fontSize: "20px",
+    backgroundColor: "#d5d2cd",
+    display: "inline",
+    marginBottom: "10px"
+  }
 
 const App:React.FC = () => {
   const [contract, setContract] = useState<any | null>(null)
   const [account, setAccount] = useState<null | string>(null)
   const [listings, setListings] = useState<Listing[]>([])
   const [NFTs, setNFTs] = useState<NFT[]>([])
-  const [state, setState] = useState<"shop" | "buying" | "my">("shop")
+  const [state, setState] = useState<"shop" | "buying" | "my" | "NFTMod">("shop")
   const [currentListing, setCurrentListing] = useState<Listing>()
+  const [currentNFT, setCurrentNFT] = useState<NFT>()
+  const [amount, setAmount] = useState<number>(0)
 
   function photoReturn(n: NFT | undefined): NFTPhoto {
 	if(n == undefined){
@@ -1012,11 +1026,13 @@ const App:React.FC = () => {
 			<div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 				<div style={{backgroundColor: "#EEEEEE",height: "330px",width: "80%",borderRadius: "20px"}}>
 					<h1 style={h1Styles}>{generatePCName(currentListing?.nftBase)}</h1>
-					<h3 style={h1Styles}>Lister: {currentListing?.lister}</h3>
+					<h3 style={h1Styles}>Lister: {currentListing?.lister.toLowerCase() == account?.toLowerCase() ? "YOU" : currentListing?.lister}</h3>
 					<h3 style={h1Styles}>NFT id: {Number(currentListing?.nftBase.id)}</h3>
 					<h3 style={{...h1Styles, display: currentListing?.nftBase.NS == 0 ? "none" : "block"}}>Condition: {Number(currentListing?.nftBase.condition)}/{currentListing?.nftBase.NS == 3 ? 150 : (currentListing?.nftBase.NS == 2 ? 125 : 100)}</h3>
 					<h3 style={h1Styles}>Price: {Number(currentListing?.price)/1000000000/1000000000} ETH</h3>
+					<div style={{display: currentListing?.lister.toLowerCase() == account?.toLowerCase() ? "none" : "block"}}>
 					<Web3Button contract={contract} value={currentListing?.price} callback={() => {alert(`NFT ${Number(currentListing?.nftBase.id)} sucessfully bought!`); window.location.reload()}} function="buyNFT" params={[currentListing?.listId]} address={String(account)} text="Buy NFT"/>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1028,13 +1044,41 @@ const App:React.FC = () => {
 		<center>
 		<div id="NFTs" style={{width: "80%", height: "500px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>{NFTs.map(n => {
 			let URI: NFTPhoto = photoReturn(n)
-			return <div style={{borderRadius: "10px", height:"300px", width:"225px", backgroundColor: "#909190"}} onMouseOver={(event) => event.currentTarget.style.backgroundColor = "#B6B6B6"}
-			onMouseOut={(event) => event.currentTarget.style.backgroundColor = "#909190"}>
+			return <div style={{borderRadius: "10px",  height: n.NS == 0 ? "200px": "250px" , width:"225px", backgroundColor: "#909190"}} onMouseOver={(event) => event.currentTarget.style.backgroundColor = "#B6B6B6"}
+			onMouseOut={(event) => event.currentTarget.style.backgroundColor = "#909190"}
+			onClick={() => {setState("NFTMod"); setCurrentNFT(n); console.log(n)}}>
 				<img src={URI} style={{backgroundColor: "white", marginTop: "5px", borderRadius: "100%"}}/>
-				<h3 style={h1Styles}>NFT ID: {Number(n.id)}</h3>
-				<h3 style={{...h1Styles, display: n.NS == 0 ? "none" : "block"}}>Condition: {Number(n.condition)}/{n.NS == 3 ? 150 : (n.NS == 2 ? 125 : 100)}</h3>
+				<h3 style={h1Styles}>{generatePCName(n)}</h3>
+				<h4 style={h1Styles}>NFT ID: {Number(n.id)}</h4>
+				<h4 style={{...h1Styles, display: n.NS == 0 ? "none" : "block"}}>Condition: {Number(n.condition)}/{n.NS == 3 ? 150 : (n.NS == 2 ? 125 : 100)}</h4>
 			</div> 
-		})}</div></center>
+		})}</div>
+		<button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px", marginTop: "10px"}} onClick={() => setState("shop")}>Back</button></center>
+	</div>
+
+	<div style={{display: state == "NFTMod" ? "block" : "none", padding: "0", alignItems: "center"}}>
+		<div style={{display: "grid", gridTemplateColumns: "4fr 6fr"}}>
+			<div>
+				<img src={photoReturn(currentNFT)} style={{ marginTop: "5px", borderRadius: "20px", height: "600px", width: "90%", backgroundColor: "lightgray"}}/>
+			</div>
+			<div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }}>
+				<div style={{backgroundColor: "#EEEEEE",height: "200px",width: "80%",borderRadius: "20px"}}>
+					<h1 style={h1Styles}>{generatePCName(currentNFT)}</h1>			
+					<h3 style={h1Styles}>NFT id: {Number(currentNFT?.id)}</h3>
+					<h3 style={{...h1Styles, display: currentNFT?.NS == 0 ? "none" : "block"}}>Condition: {Number(currentNFT?.condition)}/{currentNFT?.NS == 3 ? 150 : (currentNFT?.NS == 2 ? 125 : 100)}</h3>
+					<div style={{display: currentNFT?.NS == 0 ? "block" : "none"}}>
+					<Web3Button contract={contract} callback={() => {alert(`NFT ${Number(currentNFT?.id)} opened! Let's see what you got!`); window.location.reload(); setState("my")}} function="openNFT" params={[currentNFT?.id]} address={String(account)} text="Open NFT"/>
+					</div>
+				</div>
+				<br/>
+				<div style={{backgroundColor: "#EEEEEE",height: "220px",width: "80%",borderRadius: "20px"}}>
+					<h1 style={h1Styles}>List for sale</h1>			
+					<input style={inputStyles} placeholder="price in ETH" id="amount" onChange={(e) => {setAmount(Number(e.target.value))}}/>
+					<Web3Button contract={contract} callback={() => {alert(`NFT ${Number(currentNFT?.id)} listed for sale!`); window.location.reload(); setState("my")}} function="listNFT" params={[currentNFT?.id, amount*1000000000*1000000000]} address={String(account)} text="List NFT"/>
+				</div>
+			</div>
+		</div>
+		<button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px"}} onClick={() => setState("my")}>Back</button>
 	</div>
 	</>
   )

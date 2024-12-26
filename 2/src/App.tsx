@@ -1040,6 +1040,7 @@ const App:React.FC = () => {
 	</div>
 
 	<div style={{display: state == "my" ? "block" : "none"}}>
+		<button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px", marginTop: "10px"}} onClick={() => setState("shop")}>Back</button>
 		<h1 style={h1Styles}>{account}'s PC Mania Collection</h1>
 		<center>
 		<div id="NFTs" style={{width: "80%", height: "500px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>{NFTs.map(n => {
@@ -1053,7 +1054,19 @@ const App:React.FC = () => {
 				<h4 style={{...h1Styles, display: n.NS == 0 ? "none" : "block"}}>Condition: {Number(n.condition)}/{n.NS == 3 ? 150 : (n.NS == 2 ? 125 : 100)}</h4>
 			</div> 
 		})}</div>
-		<button style={{width: "150px", border: "none", height: "50px", borderRadius: "10px", color: "white", backgroundColor: "black", fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif", fontWeight: "bold", fontSize: "18px", marginTop: "10px"}} onClick={() => setState("shop")}>Back</button></center>
+		<h1 style={h1Styles}>My Listings</h1>
+		<div id="Listingmy" style={{width: "80%", height: "350px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>{listings.map(l => {
+			let URI: NFTPhoto = photoReturn(l.nftBase)
+			return <div style={{display: l.lister.toLowerCase() == String(account).toLowerCase() ? "block" : "none", borderRadius: "10px",  height: l.nftBase.NS == 0 ? "300px": "350px" , width:"225px", backgroundColor: "#909190"}}>
+				<img src={URI} style={{backgroundColor: "white", marginTop: "5px", borderRadius: "100%"}}/>
+				<h3 style={h1Styles}>{generatePCName(l.nftBase)}</h3>
+				<h4 style={h1Styles}>NFT ID: {Number(l.nftBase.id)}</h4>
+				<h4 style={h1Styles}>Price: {Number(l.price)/1000000000/1000000000} ETH</h4>
+				<h4 style={{...h1Styles, display: l.nftBase.NS == 0 ? "none" : "block"}}>NFT Condition: {Number(l.nftBase.condition)}/{l.nftBase.NS == 3 ? 150 : (l.nftBase.NS == 2 ? 125 : 100)}</h4>
+				<h4 style={h1Styles}>{l.bought ? "Bought" : "Still on sale"}</h4>
+			</div> 
+		})}</div>
+		</center>
 	</div>
 
 	<div style={{display: state == "NFTMod" ? "block" : "none", padding: "0", alignItems: "center"}}>

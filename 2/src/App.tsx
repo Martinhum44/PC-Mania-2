@@ -915,6 +915,10 @@ type Listing = {
 	price: number
 }
 
+type Staking = {
+
+}
+
 const h1Styles = {fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif"}
 const inputStyles = {
     width: "200px",
@@ -980,6 +984,8 @@ const App:React.FC = () => {
 		console.log(count)
 		const newListings: Listing[] = []
 		const newNFTs: NFT[] = []
+		const newStakings: Staking[] = []
+		
 		for(let i = 0; i < count[1]; i++){
 			let ls = await getValue("listee", c, [i])
 			newListings.push(ls)
@@ -998,7 +1004,7 @@ const App:React.FC = () => {
 		setNFTs(newNFTs)
       }} handleChange={(a:string) => setAccount(a)}/>
 	  <center>
-      {contract != null ? <div id="lists" style={{width: "80%", height: "500px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>
+      {String(account).length == 42 ? <div id="lists" style={{width: "80%", height: "500px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>
 	  	{listings.map(l => {
 			let URI: NFTPhoto = photoReturn(l.nftBase)
 			return !l.bought ? <div style={{borderRadius: "10px", height:"200px", width:"150px", backgroundColor: "#909190"}} onMouseOver={(event) => event.currentTarget.style.backgroundColor = "#B6B6B6"}
@@ -1006,8 +1012,7 @@ const App:React.FC = () => {
 			onClick={() => {
 				setState("buying")
 				setCurrentListing(listings[l.listId])
-			}}
-			>
+			}}>
 				<img src={URI} style={{backgroundColor: "white", marginTop: "5px", borderRadius: "100%"}}/>
 				<h5 style={h1Styles}>Price: {Number(l.price)/1000000000/1000000000} ETH</h5>
 				<h6 style={h1Styles}>NFT id: {Number(l.nftId)}</h6>
@@ -1066,6 +1071,19 @@ const App:React.FC = () => {
 				<h4 style={h1Styles}>{l.bought ? "Bought" : "Still on sale"}</h4>
 			</div> 
 		})}</div>
+
+		<h1 style={h1Styles}>My Listings</h1>
+		<div id="Stakingmy" style={{width: "80%", height: "350px", backgroundColor: "#CDCCCD", overflowY: "scroll", borderRadius: "20px", display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "15px", paddingTop: "20px", paddingLeft: "20px", paddingBottom: "20px"}}>{listings.map(l => {
+			let URI: NFTPhoto = photoReturn(l.nftBase)
+			return <div style={{display: l.lister.toLowerCase() == String(account).toLowerCase() ? "block" : "none", borderRadius: "10px",  height: "300px" , width:"225px", backgroundColor: "#909190"}}>
+				<img src={URI} style={{backgroundColor: "white", marginTop: "5px", borderRadius: "100%"}}/>
+				<h3 style={h1Styles}>{generatePCName(l.nftBase)}</h3>
+				<h4 style={h1Styles}>NFT ID: {Number(l.nftBase.id)}</h4>
+				<h4 style={h1Styles}>Price: {Number(l.price)/1000000000/1000000000} ETH</h4>
+				<h4 style={{...h1Styles, display: l.nftBase.NS == 0 ? "none" : "block"}}>NFT Condition: {Number(l.nftBase.condition)}/{l.nftBase.NS == 3 ? 150 : (l.nftBase.NS == 2 ? 125 : 100)}</h4>
+				<h4 style={h1Styles}>{l.bought ? "Bought" : "Still on sale"}</h4>
+			</div> 
+		})}</div>
 		</center>
 	</div>
 
@@ -1075,12 +1093,15 @@ const App:React.FC = () => {
 				<img src={photoReturn(currentNFT)} style={{ marginTop: "5px", borderRadius: "20px", height: "600px", width: "90%", backgroundColor: "lightgray"}}/>
 			</div>
 			<div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }}>
-				<div style={{backgroundColor: "#EEEEEE",height: "200px",width: "80%",borderRadius: "20px"}}>
+				<div style={{backgroundColor: "#EEEEEE",height: "250px",width: "80%",borderRadius: "20px"}}>
 					<h1 style={h1Styles}>{generatePCName(currentNFT)}</h1>			
 					<h3 style={h1Styles}>NFT id: {Number(currentNFT?.id)}</h3>
 					<h3 style={{...h1Styles, display: currentNFT?.NS == 0 ? "none" : "block"}}>Condition: {Number(currentNFT?.condition)}/{currentNFT?.NS == 3 ? 150 : (currentNFT?.NS == 2 ? 125 : 100)}</h3>
 					<div style={{display: currentNFT?.NS == 0 ? "block" : "none"}}>
-					<Web3Button contract={contract} callback={() => {alert(`NFT ${Number(currentNFT?.id)} opened! Let's see what you got!`); window.location.reload(); setState("my")}} function="openNFT" params={[currentNFT?.id]} address={String(account)} text="Open NFT"/>
+						<Web3Button contract={contract} callback={() => {alert(`NFT ${Number(currentNFT?.id)} opened! Let's see what you got!`); window.location.reload(); setState("my")}} function="openNFT" params={[currentNFT?.id]} address={String(account)} text="Open NFT"/>
+					</div>
+					<div style={{display: currentNFT?.NS != 0 ? "block" : "none"}}>
+						<Web3Button contract={contract} callback={() => {alert(`NFT ${Number(currentNFT?.id)} staked!`); window.location.reload(); setState("my")}} function="stakeNFT" params={[currentNFT?.id]} address={String(account)} text="Stake NFT"/>
 					</div>
 				</div>
 				<br/>
